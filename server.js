@@ -15,8 +15,10 @@ const ai = new GoogleGenAI({
     vertexai: false
 });
 
+app.use(express.static(__dirname));
+
 app.get("/", (req, res) => {
-    res.send("Servidor SeniorCare funcionando");
+    res.sendFile(__dirname + "/index.html");
 });
 
 app.post("/analizar", async (req, res) => {
