@@ -33,16 +33,42 @@ if (!SpeechRecognition) {
 
     };
 
-    reconocimiento.onresult = function (event) {
+reconocimiento.onresult = async function (event) {
 
-        const resultado =
-            event.results[0][0].transcript;
+    const resultado =
+        event.results[0][0].transcript;
 
-        console.log("Texto reconocido:", resultado);
+    console.log("Texto reconocido:", resultado);
 
-        texto.innerHTML = resultado;
+    texto.innerHTML = resultado;
 
-    };
+    try {
+
+        const respuesta = await fetch("/analizar", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                texto: resultado
+            })
+
+        });
+
+        const datos = await respuesta.json();
+
+        console.log("Respuesta de Gemini:", datos);
+
+    } catch (error) {
+
+        console.error("Error al enviar la cita:", error);
+
+    }
+
+};
 
     reconocimiento.onerror = function (event) {
 
