@@ -2,6 +2,9 @@ const boton = document.getElementById("microfono");
 const texto = document.getElementById("texto");
 const resultadoCita =
     document.getElementById("resultadoCita");
+const enviarCita =
+    document.getElementById("enviarCita");
+let datosCita = null;
 // Comprobar si el navegador tiene reconocimiento de voz
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -60,7 +63,7 @@ reconocimiento.onresult = async function (event) {
         });
 
         const datos = await respuesta.json();
-
+        datosCita = datos;
         console.log("Respuesta de Gemini:", datos);
         resultadoCita.innerHTML = `
          📅 Fecha: ${datos.fecha}<br>
@@ -70,7 +73,7 @@ reconocimiento.onresult = async function (event) {
     } catch (error) {
 
         console.error("Error al enviar la cita:", error);
-         
+
     }
 
 };
@@ -90,3 +93,23 @@ reconocimiento.onresult = async function (event) {
 
     };
 }
+enviarCita.onclick = function () {
+
+    if (!datosCita) {
+
+        alert("Primero debes decir una cita.");
+
+        return;
+    }
+
+    console.log("Cita preparada para enviar a Thunkable:");
+    console.log(datosCita);
+
+    alert(
+        "Cita preparada:\n" +
+        "Fecha: " + datosCita.fecha + "\n" +
+        "Hora: " + datosCita.hora + "\n" +
+        "Tipo: " + datosCita.tipo
+    );
+
+};
