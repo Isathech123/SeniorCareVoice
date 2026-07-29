@@ -1,33 +1,61 @@
 const boton = document.getElementById("microfono");
-
 const texto = document.getElementById("texto");
 
-const reconocimiento =
-new webkitSpeechRecognition();
+// Comprobar si el navegador tiene reconocimiento de voz
+const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
 
-reconocimiento.lang = "es-ES";
+if (!SpeechRecognition) {
 
-reconocimiento.continuous = false;
+    texto.innerHTML =
+        "Este navegador no permite reconocimiento de voz.";
 
-reconocimiento.interimResults = false;
-boton.onclick = function(){
+    boton.disabled = true;
 
-texto.innerHTML = "Escuchando...";
+} else {
 
-reconocimiento.start();
+    const reconocimiento = new SpeechRecognition();
 
-}
-reconocimiento.onresult = function(event){
+    reconocimiento.lang = "es-ES";
+    reconocimiento.continuous = false;
+    reconocimiento.interimResults = false;
 
-const resultado =
-event.results[0][0].transcript;
+    boton.onclick = function () {
 
-texto.innerHTML = resultado;
+        texto.innerHTML = "🎤 Escuchando...";
 
-}
-reconocimiento.onerror = function(){
+        try {
+            reconocimiento.start();
+        } catch (error) {
+            console.error("Error al iniciar reconocimiento:", error);
+            texto.innerHTML = "No se pudo iniciar el micrófono.";
+        }
 
-texto.innerHTML =
-"Ha ocurrido un error.";
+    };
 
+    reconocimiento.onresult = function (event) {
+
+        const resultado =
+            event.results[0][0].transcript;
+
+        console.log("Texto reconocido:", resultado);
+
+        texto.innerHTML = resultado;
+
+    };
+
+    reconocimiento.onerror = function (event) {
+
+        console.error("Error de reconocimiento:", event.error);
+
+        texto.innerHTML =
+            "Error del micrófono: " + event.error;
+
+    };
+
+    reconocimiento.onend = function () {
+
+        console.log("Reconocimiento terminado");
+
+    };
 }
