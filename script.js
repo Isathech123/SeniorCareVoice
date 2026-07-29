@@ -1,6 +1,7 @@
 const boton = document.getElementById("microfono");
 const texto = document.getElementById("texto");
-
+const resultadoCita =
+    document.getElementById("resultadoCita");
 // Comprobar si el navegador tiene reconocimiento de voz
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -61,11 +62,15 @@ reconocimiento.onresult = async function (event) {
         const datos = await respuesta.json();
 
         console.log("Respuesta de Gemini:", datos);
-
+        resultadoCita.innerHTML = `
+         📅 Fecha: ${datos.fecha}<br>
+         🕐 Hora: ${datos.hora}<br>
+         🏥 Tipo: ${datos.tipo}
+`;
     } catch (error) {
 
         console.error("Error al enviar la cita:", error);
-
+         
     }
 
 };
