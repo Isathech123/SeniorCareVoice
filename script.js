@@ -105,11 +105,22 @@ enviarCita.onclick = function () {
     console.log("Cita preparada para enviar a Thunkable:");
     console.log(datosCita);
 
-    alert(
-        "Cita preparada:\n" +
-        "Fecha: " + datosCita.fecha + "\n" +
-        "Hora: " + datosCita.hora + "\n" +
-        "Tipo: " + datosCita.tipo
-    );
+    const mensaje = JSON.stringify(datosCita);
+
+    if (window.ThunkableWebviewerExtension) {
+
+    window.ThunkableWebviewerExtension.postMessage(mensaje);
+
+    console.log("Cita enviada a Thunkable.");
+
+    alert("MENSAJE ENVIADO A THUNKABLE");
+
+} else {
+
+    console.log("NO EXISTE THUNKABLE WEBVIEWER EXTENSION");
+
+    alert("NO SE ENCONTRÓ LA CONEXIÓN CON THUNKABLE");
+
+}
 
 };
