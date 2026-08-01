@@ -4,7 +4,40 @@ require("dotenv").config();
 console.log("Carpeta actual:", process.cwd());
 console.log("API KEY CARGADA:", process.env.GEMINI_API_KEY ? "SI" : "NO");
 const { GoogleGenAI } = require("@google/genai");
+const { google } = require("googleapis");
+const fs = require("fs");
+const path = require("path");
 
+let credentials;
+
+if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+
+    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+} else {
+
+    const archivoCredenciales = path.join(
+        __dirname,
+        "credentials",
+        "seniorcarevoice-ea1d45aa1f35.json"
+    );
+
+    credentials = JSON.parse(
+        fs.readFileSync(archivoCredenciales, "utf8")
+    );
+
+}
+
+const auth = new google.auth.GoogleAuth({
+    credentials: credentials,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
+});
+
+const sheets = google.sheets({
+    version: "v4",
+    auth
+});
+const spreadsheetId = "1-0KEtcPy-CIB3KEUZhdSzn1vLHpb9oDZT5c8b746sjc";
 const app = express();
 
 app.use(cors());
