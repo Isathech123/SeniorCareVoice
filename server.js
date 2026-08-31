@@ -107,7 +107,28 @@ res.json(datos);
 }
 
 });
+app.get("/probar-citas", async (req, res) => {
 
+    try {
+
+        const respuesta = await sheets.spreadsheets.values.get({
+            spreadsheetId: spreadsheetId,
+            range: "Appointments!A:E"
+        });
+
+        res.json(respuesta.data.values || []);
+
+    } catch (error) {
+
+        console.error("Error leyendo Google Sheets:", error);
+
+        res.status(500).json({
+            error: "No se pudieron leer las citas"
+        });
+
+    }
+
+});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
