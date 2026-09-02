@@ -39,7 +39,41 @@ const sheets = google.sheets({
 });
 const spreadsheetId = "1-0KEtcPy-CIB3KEUZhdSzn1vLHpb9oDZT5c8b746sjc";
 const app = express();
+const ONESIGNAL_APP_ID = "584603d6-e697-4d21-9707-ac1bf58f8138";
+const ONESIGNAL_REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY;
+async function enviarNotificacion(pushUserId, titulo, mensaje) {
 
+    const respuesta = await fetch("https://api.onesignal.com/notifications", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Key ${ONESIGNAL_REST_API_KEY}`
+        },
+        body: JSON.stringify({
+            app_id: ONESIGNAL_APP_ID,
+            include_aliases: {
+                external_id: [pushUserId]
+            },
+            target_channel: "push",
+            headings: {
+                en: titulo
+            },
+            contents: {
+                en: mensaje
+            }
+        })
+    });
+
+    const datos = await respuesta.json();
+
+    console.log("Respuesta de OneSignal:", datos);
+
+    if (!respuesta.ok) {
+        throw new Error(JSON.stringify(datos));
+    }
+
+    return datos;
+}
 app.use(cors());
 app.use(express.json());
 
