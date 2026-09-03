@@ -51,15 +51,17 @@ async function enviarNotificacion(pushUserId, titulo, mensaje) {
         },
         body: JSON.stringify({
             app_id: ONESIGNAL_APP_ID,
-            include_aliases: {
-                external_id: [pushUserId]
-            },
+
+            include_subscription_ids: [pushUserId],
+
             target_channel: "push",
+
             headings: {
-                en: titulo
+                es: titulo
             },
+
             contents: {
-                en: mensaje
+                es: mensaje
             }
         })
     });
@@ -163,6 +165,111 @@ app.get("/probar-citas", async (req, res) => {
     }
 
 });
+async function revisarRecordatorios() {
+
+    try {
+
+        const respuesta = await sheets.spreadsheets.values.get({
+            spreadsheetId: spreadsheetId,
+            range: "Appointments!A:F"
+        });
+
+        const filas = respuesta.data.values || [];
+
+        if (filas.length <= 1) {
+            console.log("No hay citas para revisar.");
+            return;
+        }
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        const hoyNumero =
+            hoy.getFullYear() * 10000 +
+            (hoy.getMonth() + 1) * 100 +
+            hoy.getDate();
+
+        console.log("Fecha de hoy:", hoyNumero);
+
+        for (let i = 1; i < filas.length; i++) {
+
+            const fila = filas[i];
+
+            const usuario = fila[0];
+            const hora = fila[1];
+            const tipo = fila[2];
+            const fecha = fila[3];
+            const numeroFecha = Number(fila[4]);
+            const pushUserId = fila[5];
+
+            if (!usuario || !tipo || !numeroFecha || !pushUserId) {
+                continue;
+            }
+
+            const fechaCita = new Date(
+                Math.floor(numeroFecha / 10000),
+                Math.floor((numeroFecha % 10000) / 100) - 1,
+                numeroFecha % 100
+            );
+
+            fechaCita.setHours(0, 0, 0, 0);
+
+            const diferenciaMilisegundos =
+                fechaCita.getTime() - hoy.getTime();
+
+            const diasRestantes =
+                Math.round(
+                    diferenciaMilisegundos /
+                    (1000 * 60 * 60 * 24)
+                );
+
+            if (diasRestantes === 3 || diasRestantes === 1) {
+
+                const titulo = "Recordatorio de cita";
+
+                const mensaje =
+                    `Tienes una cita de ${tipo} el ${fecha}` +
+                    `${hora ? ` a las ${hora}` : ""}. ` +
+                    `Faltan ${diasRestantes} días.`;
+
+                console.log(
+                    `Enviando recordatorio a ${usuario}: ${mensaje}`
+                );
+
+                try {
+
+                    await enviarNotificacion(
+                        pushUserId,
+                        titulo,
+                        mensaje
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        `Error enviando notificación a ${usuario}:`,
+                        error.message
+                    );
+
+                }
+            }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error revisando los recordatorios:",
+            error
+        );
+
+    }
+}
+
+revisarRecordatorios();
+
+setInterval(() => {
+    revisarRecordatorios();
+}, 24 * 60 * 60 * 1000);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
